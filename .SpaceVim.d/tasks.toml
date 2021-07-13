@@ -1,0 +1,7 @@
+[start]
+  command="python3"
+  args = ["main.py"]
+
+[dev]
+  command="pymon"
+  args = ["main.py"]
