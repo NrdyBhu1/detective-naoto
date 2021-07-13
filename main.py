@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from discord import Client, Activity, ActivityType, Embed, Permissions, PermissionOverwrite, ChannelType 
+from discord import Client, Activity, ActivityType, Embed, Permissions, PermissionOverwrite, ChannelType, Intents
 from dotenv import load_dotenv
+from random import choice, randint
+import string
 import os
 
 PREFIX="tr!"
@@ -37,12 +39,35 @@ class MyClient(Client):
         for role in guild.roles:
             if role.name == name:
                 rid = role.id
-        return rid 
+        return rid
+
+    
+    def get_seed(self):
+        seed = ""
+        for i in range(0, randint(4, 6)):
+            seed += choice(string.ascii_letters+string.digits)
+
+        return seed
 
 
     async def on_message(self, msg):
         if msg.author == self.user:
             return
+
+        if msg.channel.type == ChannelType.private:
+            if msg.content == "help":
+                await msg.reply("Creating thread")
+                await self.wait_until_ready()
+                guild = await self.fetch_guild(os.getenv("GUILD"))
+                admins = os.getenv("ADMINS").split(" ")
+                overwrites = {
+                    guild.default_role: PermissionOverwrite(read_messages=False)
+                }
+                for admin in admins:
+                    overwrites[guild.get_role(int(admin))] = PermissionOverwrite(read_messages=True)
+
+                await self.wait_until_ready()
+                await guild.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
 
         if msg.mentions.count(self.user) > 1:
             await msg.reply(f"My Prefix is {PREFIX}")
@@ -67,7 +92,7 @@ class MyClient(Client):
                         snipe_embed.set_author(name=str(user))
                         snipe_embed.set_footer(text=self.the_deleted_msg_timestamp)
                         await msg.channel.send(embed=snipe_embed)
-                
+
                 if command == "kick":
                     if msg.author.guild_permissions.kick_members:
                         if len(msg.mentions) != 0:
@@ -139,7 +164,7 @@ class MyClient(Client):
                                 await msg.channel.send("Mention someone to unmute")
                     else:
                         await msg.channel.send("I'm sorry, but you do not have that authority")
-                
+
                 if command == "ban":
                     if msg.author.guild_permissions.ban_members:
                         if len(msg.mentions) != 0:
@@ -172,6 +197,6 @@ class MyClient(Client):
 
 
 load_dotenv()
-bot = MyClient()
-
+intents = Intents().all()
+bot = MyClient(intents=intents)
 bot.run(os.getenv("TOKEN"))
