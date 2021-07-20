@@ -121,6 +121,7 @@ class MyClient(Client):
                     if msg.author.guild_permissions.kick_members:
                         if len(msg.mentions) != 0:
                             try:
+                                args.pop(0)
                                 await msg.mentions[0].send(f"Kicked: {self.arr_as_str(args)}")
                                 await msg.mentions[0].kick(reason=self.arr_as_str(args))
                                 await msg.channel.send(f"Kicked {msg.mentions[0].name}\nReason: {self.arr_as_str(args)}")
@@ -154,6 +155,7 @@ class MyClient(Client):
 
                         if len(msg.mentions) != 0:
                             try:
+                                args.pop(0)
                                 await msg.mentions[0].send(f"Muted: {self.arr_as_str(args)}")
                                 await msg.mentions[0].add_roles(role)
                                 await msg.channel.send(f"Muted {msg.mentions[0].name}")
@@ -200,6 +202,7 @@ class MyClient(Client):
                     if msg.author.guild_permissions.ban_members:
                         if len(msg.mentions) != 0:
                             try:
+                                args.pop(0)
                                 await msg.mentions[0].send(f"Banned: {self.arr_as_str(args)}")
                                 await msg.mentions[0].ban()
                                 await msg.channel.send(f"Banned {msg.mentions[0].name}")
