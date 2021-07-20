@@ -6,8 +6,50 @@ from dotenv import load_dotenv
 from random import choice, randint
 import string
 import os
+import cloudscraper
 
 PREFIX="tr!"
+
+scraper = cloudscraper.create_scraper()
+meme_url = "https://api.martinebot.com/v1/images/memes"
+joke_url = "https://v2.jokeapi.dev/joke/Any"
+wallpaper_url = "https://api.martinebot.com/v1/images/wallpaper"
+
+
+def get_meme():
+    meme_data = scraper.get(meme_url).json()
+    meme = Embed(title=meme_data['data']['title'],
+                 url=meme_data['data']['post_url'])
+    meme.set_image(url=meme_data['data']['image_url'])
+    meme.set_footer(
+        text=f"👍 {meme_data['data']['upvotes']}    |   👎 {meme_data['data']['downvotes']}  |   💬 {meme_data['data']['comments']}")
+    return meme
+
+
+def get_wallpaper():
+    wallpaper_data = scraper.get(wallpaper_url).json()
+    wallpaper = Embed(
+        title=wallpaper_data['data']['title'], url=wallpaper_data['data']['post_url'])
+    wallpaper.set_image(url=wallpaper_data['data']['image_url'])
+    wallpaper.set_footer(text=f"👍 {wallpaper_data['data']['upvotes']}    |   👎 {wallpaper_data['data']['downvotes']}  |   💬 {wallpaper_data['data']['comments']}")
+    return wallpaper
+
+
+def get_joke():
+    joke_data = scraper.get(joke_url).json()
+    if not joke_data['error']:
+        if joke_data['type'] == 'twopart':
+            joke = Embed(title=joke_data['category'], description=f"**{joke_data['setup']}**\n{joke_data['delivery']}")
+        elif joke_data['type'] == 'single':
+            joke = Embed(title=joke_data['category'], description=f"{joke_data['joke']}")
+    else:
+        joke_data = scraper.get(joke_url).json()
+        if joke_data['type'] == 'twopart':
+            joke = Embed(title=joke_data['category'], description=f"**{joke_data['setup']}**\n{joke_data['delivery']}")
+        elif joke_data['type'] == 'single':
+            joke = Embed(title=joke_data['category'], description=f"{joke_data['joke']}")
+    return joke
+
 
 class MyClient(Client):
     async def on_ready(self):
@@ -101,6 +143,34 @@ class MyClient(Client):
 
                 if command == "ping":
                     await msg.reply(f"**:ping_pong: Pong** \nLatency: {round(self.latency * 100)} ms")
+
+                if command == "meme":
+                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 11:
+                        nofc = int(args[0])
+                    else:
+                        nofc = 1
+
+                    for _ in range(0, nofc):
+                        meme = get_meme()
+                        await msg.channel.send(embed=meme)
+                if command == "wallpaper":
+                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 5:
+                        nofc = int(args[0])
+                    else:
+                        nofc = 1
+
+                    for _ in range(0, nofc):
+                        wallpaper = get_wallpaper()
+                        await msg.channel.send(embed=wallpaper)
+                if command == "joke":
+                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 7:
+                        nofc = int(args[0])
+                    else:
+                        nofc = 1
+
+                    for _ in range(0, nofc):
+                        joke = get_joke()
+                        await msg.channel.send(embed=joke)
 
                 if command == "close":
                     for i in self.threads:
@@ -230,6 +300,9 @@ class MyClient(Client):
                     help_embed.add_field(name="Kick a user", value=f"`{PREFIX}kick *t`", inline=True)
                     help_embed.add_field(name="Mute a user", value=f"`{PREFIX}mute *t`", inline=True)
                     help_embed.add_field(name="Unmute a user", value=f"`{PREFIX}unmute *t`", inline=True)
+                    help_embed.add_field(name="Post Memes", value=f"`{PREFIX}meme`", inline=True)
+                    help_embed.add_field(name="Post Wallpapers", value=f"`{PREFIX}wallpaper`", inline=True)
+                    help_embed.add_field(name="Post Jokes", value=f"`{PREFIX}joke`", inline=True)
                     help_embed.add_field(name="Ping Latency", value=f"`{PREFIX}ping`", inline=True)
                     help_embed.set_footer(text=f"Requested by {msg.author}")
                     await msg.channel.send(embed=help_embed)
