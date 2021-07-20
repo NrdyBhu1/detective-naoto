@@ -11,10 +11,10 @@ PREFIX="tr!"
 
 class MyClient(Client):
     async def on_ready(self):
+        self.threads = {}
         self.the_deleted_msg_content = ""
         self.the_deleted_msg_timestamp = None
         self.the_deleted_msg_author_id = 0
-        self.threads = {}
         await self.change_presence(activity=Activity(type=ActivityType.listening, name=f"{PREFIX}help | Dm me help for help"))
         print(f"Logged in as {self.user}")
 
@@ -121,6 +121,7 @@ class MyClient(Client):
                     if msg.author.guild_permissions.kick_members:
                         if len(msg.mentions) != 0:
                             try:
+                                await msg.mentions[0].send(f"Kicked: {self.arr_as_str(args)}")
                                 await msg.mentions[0].kick(reason=self.arr_as_str(args))
                                 await msg.channel.send(f"Kicked {msg.mentions[0].name}\nReason: {self.arr_as_str(args)}")
                             except:
@@ -129,6 +130,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
+                                    await usr.send(f"Kicked: {self.arr_as_str(args)}")
                                     await usr.kick(reason=self.arr_as_str(args))
                                     await msg.channel.send(f"Kicked {usr.name}\nReason: {self.arr_as_str(args)}")
                                 except:
@@ -152,6 +154,7 @@ class MyClient(Client):
 
                         if len(msg.mentions) != 0:
                             try:
+                                await msg.mentions[0].send(f"Muted: {self.arr_as_str(args)}")
                                 await msg.mentions[0].add_roles(role)
                                 await msg.channel.send(f"Muted {msg.mentions[0].name}")
                             except:
@@ -160,6 +163,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
+                                    await usr.send(f"Muted: {self.arr_as_str(args)}")
                                     await usr.add_roles(role)
                                     await msg.channel.send(f"Muted {usr.name}")
                                 except:
@@ -196,6 +200,7 @@ class MyClient(Client):
                     if msg.author.guild_permissions.ban_members:
                         if len(msg.mentions) != 0:
                             try:
+                                await msg.mentions[0].send(f"Banned: {self.arr_as_str(args)}")
                                 await msg.mentions[0].ban()
                                 await msg.channel.send(f"Banned {msg.mentions[0].name}")
                             except:
@@ -204,6 +209,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args[0])
+                                    await usr.send(f"Banned: {self.arr_as_str(args)}")
                                     await usr.ban()
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
