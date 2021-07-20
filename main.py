@@ -7,14 +7,15 @@ from random import choice, randint
 import string
 import os
 
-PREFIX="tr!"
+PREFIX="br!"
 
 class MyClient(Client):
     async def on_ready(self):
         self.the_deleted_msg_content = ""
         self.the_deleted_msg_timestamp = None
         self.the_deleted_msg_author_id = 0
-        await self.change_presence(activity=Activity(type=ActivityType.listening, name="tr!help | Dm me for help"))
+        self.threads = {}
+        await self.change_presence(activity=Activity(type=ActivityType.listening, name=f"{PREFIX}help | Dm me help for help"))
         print(f"Logged in as {self.user}")
 
 
@@ -33,6 +34,15 @@ class MyClient(Client):
                 present = True
 
         return present
+
+
+    def arr_as_str(self, arr):
+        res = ""
+        for i in arr:
+            res += i+" "
+
+        return res
+
 
     def get_role_id_from_name(self, guild, name):
         rid = None
@@ -55,22 +65,28 @@ class MyClient(Client):
             return
 
         if msg.channel.type == ChannelType.private:
+            if msg.author.id in self.threads:
+                await self.threads[msg.author.id].send(f"**{msg.author.name}**: {msg.content}")
             if msg.content == "help":
                 await msg.reply("Creating thread")
                 await self.wait_until_ready()
                 guild = await self.fetch_guild(os.getenv("GUILD"))
-                admins = os.getenv("ADMINS").split(" ")
                 overwrites = {
                     guild.default_role: PermissionOverwrite(read_messages=False)
                 }
-                for admin in admins:
-                    overwrites[guild.get_role(int(admin))] = PermissionOverwrite(read_messages=True)
-
                 await self.wait_until_ready()
-                await guild.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
+                channel = await guild.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
+                await channel.send(f"@here {msg.author.name} requires help")
+                self.threads[msg.author.id] = channel
 
         if msg.mentions.count(self.user) > 1:
             await msg.reply(f"My Prefix is {PREFIX}")
+
+
+        for i in self.threads:
+            if msg.channel == self.threads[i]:
+                user = await self.fetch_user(i)
+                await user.send(f"**{msg.author.name}**: {msg.content}")
 
         if msg.content.startswith(PREFIX):
             if msg.channel.type == ChannelType.private:
@@ -82,6 +98,14 @@ class MyClient(Client):
 
                 if command == "ping":
                     await msg.reply(f"**:ping_pong: Pong** \nLatency: {round(self.latency * 100)} ms")
+
+                if command == "close":
+                    for i in self.threads:
+                        if msg.channel == self.threads[i]:
+                            user = await self.fetch_user(i)
+                            await user.send("Thread closed!")
+                            await self.threads[i].delete()
+                            self.threads.pop(i)
 
                 if command == "snipe":
                     if self.the_deleted_msg_content == "":
@@ -97,15 +121,16 @@ class MyClient(Client):
                     if msg.author.guild_permissions.kick_members:
                         if len(msg.mentions) != 0:
                             try:
-                                await msg.mentions[0].kick()
-                                await msg.channel.send(f"Kicked {msg.mentions[0].name}")
+                                await msg.mentions[0].kick(reason=self.arr_as_str(args))
+                                await msg.channel.send(f"Kicked {msg.mentions[0].name}\nReason: {self.arr_as_str(args)}")
                             except:
                                 await msg.channel.send("Cannot Do that sorry")
                         else:
                             if len(args) != 0:
                                 try:
-                                    usr = await msg.guild.fetch_member(args[0])
-                                    await usr.kick()
+                                    usr = await msg.guild.fetch_member(args.pop(0))
+                                    await usr.kick(reason=self.arr_as_str(args))
+                                    await msg.channel.send(f"Kicked {usr.name}\nReason: {self.arr_as_str(args)}")
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
                             else:
@@ -121,7 +146,7 @@ class MyClient(Client):
                             role = msg.guild.get_role(rid)
                         else:
                             role = await msg.guild.create_role(name="Muted", permissions=Permissions().none(), hoist=True)
-                            overwrite = PermissionOverwrite().from_pair(Permissions().none(), Permissions().all())
+                            overwrite = PermissionOverwrite(read_messages=False)
                             for channel in msg.guild.channels:
                                 await channel.set_permissions(role, overwrite=overwrite)
 
@@ -134,8 +159,9 @@ class MyClient(Client):
                         else:
                             if len(args) != 0:
                                 try:
-                                    usr = await msg.guild.fetch_member(args[0])
+                                    usr = await msg.guild.fetch_member(args.pop(0))
                                     await usr.add_roles(role)
+                                    await msg.channel.send(f"Muted {usr.name}")
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
                             else:
@@ -158,6 +184,7 @@ class MyClient(Client):
                                 try:
                                     usr = await msg.guild.fetch_member(args[0])
                                     await usr.remove_roles(role)
+                                    await msg.channel.send(f"Unmuted {usr.name}")
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
                             else:
@@ -187,11 +214,11 @@ class MyClient(Client):
 
                 if command == "help":
                     help_embed = Embed(title="Help", description="Commands list\n ***t**: User mention or User id (Required)")
-                    help_embed.add_field(name="Ban a user", value="`tr!ban *t`", inline=True)
-                    help_embed.add_field(name="Kick a user", value="`tr!kick *t`", inline=True)
-                    help_embed.add_field(name="Mute a user", value="`tr!mute *t`", inline=True)
-                    help_embed.add_field(name="Unmute a user", value="`tr!unmute *t`", inline=True)
-                    help_embed.add_field(name="Ping Latency", value="`tr!ping`", inline=True)
+                    help_embed.add_field(name="Ban a user", value=f"`{PREFIX}ban *t`", inline=True)
+                    help_embed.add_field(name="Kick a user", value=f"`{PREFIX}kick *t`", inline=True)
+                    help_embed.add_field(name="Mute a user", value=f"`{PREFIX}mute *t`", inline=True)
+                    help_embed.add_field(name="Unmute a user", value=f"`{PREFIX}unmute *t`", inline=True)
+                    help_embed.add_field(name="Ping Latency", value=f"`{PREFIX}ping`", inline=True)
                     help_embed.set_footer(text=f"Requested by {msg.author}")
                     await msg.channel.send(embed=help_embed)
 
