@@ -37,9 +37,12 @@ class MyClient(Client):
 
 
     def arr_as_str(self, arr):
-        res = ""
-        for i in arr:
-            res += i+" "
+        if len(arr) != 0:
+            res = ""
+            for i in arr:
+                res += i+" "
+        else:
+            res = "No reason"
 
         return res
 
@@ -122,7 +125,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"Kicked: {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were kicked from **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                 await msg.mentions[0].kick(reason=self.arr_as_str(args))
                                 await msg.channel.send(f"Kicked {msg.mentions[0].name}\nReason: {self.arr_as_str(args)}")
                             except:
@@ -131,7 +134,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
-                                    await usr.send(f"Kicked: {self.arr_as_str(args)}")
+                                    await usr.send(f"You were kicked from **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                     await usr.kick(reason=self.arr_as_str(args))
                                     await msg.channel.send(f"Kicked {usr.name}\nReason: {self.arr_as_str(args)}")
                                 except:
@@ -156,7 +159,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"Muted: {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                 await msg.mentions[0].add_roles(role)
                                 await msg.channel.send(f"Muted {msg.mentions[0].name}")
                             except:
@@ -165,7 +168,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
-                                    await usr.send(f"Muted: {self.arr_as_str(args)}")
+                                    await usr.send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                     await usr.add_roles(role)
                                     await msg.channel.send(f"Muted {usr.name}")
                                 except:
@@ -203,7 +206,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"Banned: {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were banned from **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                 await msg.mentions[0].ban()
                                 await msg.channel.send(f"Banned {msg.mentions[0].name}")
                             except:
@@ -212,7 +215,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args[0])
-                                    await usr.send(f"Banned: {self.arr_as_str(args)}")
+                                    await usr.send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
                                     await usr.ban()
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
