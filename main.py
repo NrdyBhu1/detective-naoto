@@ -14,7 +14,7 @@ scraper = cloudscraper.create_scraper()
 meme_url = "https://api.martinebot.com/v1/images/memes"
 joke_url = "https://v2.jokeapi.dev/joke/Any"
 wallpaper_url = "https://api.martinebot.com/v1/images/wallpaper"
-
+roast_url = "https://insult.mattbas.org/api/insult"
 
 def get_meme():
     meme_data = scraper.get(meme_url).json()
@@ -49,6 +49,11 @@ def get_joke():
         elif joke_data['type'] == 'single':
             joke = Embed(title=joke_data['category'], description=f"{joke_data['joke']}")
     return joke
+
+def get_roast():
+    roast_data = scraper.get(roast_url)
+    roast = Embed(title="Roast", description=roast_data.content.decode("utf-8"))
+    return roast
 
 
 class MyClient(Client):
@@ -145,32 +150,20 @@ class MyClient(Client):
                     await msg.reply(f"**:ping_pong: Pong** \nLatency: {round(self.latency * 100)} ms")
 
                 if command == "meme":
-                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 11:
-                        nofc = int(args[0])
-                    else:
-                        nofc = 1
+                    meme = get_meme()
+                    await msg.channel.send(embed=meme)
 
-                    for _ in range(0, nofc):
-                        meme = get_meme()
-                        await msg.channel.send(embed=meme)
                 if command == "wallpaper":
-                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 5:
-                        nofc = int(args[0])
-                    else:
-                        nofc = 1
+                    wallpaper = get_wallpaper()
+                    await msg.channel.send(embed=wallpaper)
 
-                    for _ in range(0, nofc):
-                        wallpaper = get_wallpaper()
-                        await msg.channel.send(embed=wallpaper)
                 if command == "joke":
-                    if len(args) != 0 and args[0].isdigit() and int(args[0]) < 7:
-                        nofc = int(args[0])
-                    else:
-                        nofc = 1
+                    joke = get_joke()
+                    await msg.channel.send(embed=joke)
 
-                    for _ in range(0, nofc):
-                        joke = get_joke()
-                        await msg.channel.send(embed=joke)
+                if command == "roast":
+                    roast = get_roast()
+                    await msg.channel.send(embed=roast)
 
                 if command == "close":
                     for i in self.threads:
