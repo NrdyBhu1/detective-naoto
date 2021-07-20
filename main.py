@@ -7,7 +7,7 @@ from random import choice, randint
 import string
 import os
 
-PREFIX="br!"
+PREFIX="tr!"
 
 class MyClient(Client):
     async def on_ready(self):
