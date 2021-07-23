@@ -126,7 +126,7 @@ class MyClient(Client):
                 }
                 await self.wait_until_ready()
                 channel = await guild.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
-                await channel.send(f"@here {msg.author.name} requires help")
+                await channel.send(f"{msg.author.name} requires help")
                 self.threads[msg.author.id] = channel
 
         if msg.mentions.count(self.user) > 1:
