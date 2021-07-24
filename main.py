@@ -207,6 +207,12 @@ class MyClient(Client):
                     else:
                         await msg.channel.send("I'm sorry, but you do not have that authority")
 
+                if command == "math":
+                    try:
+                        await msg.channel.send(str(eval(self.arr_as_str(args))))
+                    except:
+                        await msg.channel.send("There must be a mistake, pls try again")
+
                 if command == "mute":
                     if msg.author.guild_permissions.manage_roles:
                         role = None
