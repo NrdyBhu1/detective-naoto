@@ -58,6 +58,7 @@ def get_roast():
 
 class MyClient(Client):
     async def on_ready(self):
+        self.thread_category = None
         self.threads = {}
         self.the_deleted_msg_content = ""
         self.the_deleted_msg_timestamp = None
@@ -109,6 +110,19 @@ class MyClient(Client):
 
         return seed
 
+    async def get_cat(self, guild):
+        cats = guild.by_category()
+        for i in range(len(cats)):
+            if cats[i][0].name == "DN-Threads-Or-Log":
+                self.thread_category = cats[i][0]
+
+        if self.thread_category is None:
+            print(guild)
+            overwrites = {
+                guild.default_role: PermissionOverwrite(read_messages=False)
+            }
+            self.thread_category = await guild.create_category(name="DN-Threads-Or-Log", overwrites=overwrites, position=0)
+
 
     async def on_message(self, msg):
         if msg.author == self.user:
@@ -117,26 +131,21 @@ class MyClient(Client):
         if msg.channel.type == ChannelType.private:
             if msg.author.id in self.threads:
                 await self.threads[msg.author.id].send(f"**{msg.author.name}**: {msg.content}")
-            if msg.content == "help":
+            else:
+                guild = await self.fetch_guild(os.getenv("GUILD"))
+                await self.get_cat(guild)
                 await msg.reply("Creating thread")
                 await self.wait_until_ready()
-                guild = await self.fetch_guild(os.getenv("GUILD"))
                 overwrites = {
                     guild.default_role: PermissionOverwrite(read_messages=False)
                 }
                 await self.wait_until_ready()
-                channel = await guild.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
+                channel = await self.thread_category.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
                 await channel.send(f"{msg.author.name} requires help")
                 self.threads[msg.author.id] = channel
 
         if msg.mentions.count(self.user) > 1:
             await msg.reply(f"My Prefix is {PREFIX}")
-
-
-        for i in self.threads:
-            if msg.channel == self.threads[i]:
-                user = await self.fetch_user(i)
-                await user.send(f"**{msg.author.name}**: {msg.content}")
 
         if msg.content.startswith(PREFIX):
             if msg.channel.type == ChannelType.private:
@@ -166,12 +175,13 @@ class MyClient(Client):
                     await msg.channel.send(embed=roast)
 
                 if command == "close":
-                    for i in self.threads:
-                        if msg.channel == self.threads[i]:
-                            user = await self.fetch_user(i)
-                            await user.send("Thread closed!")
-                            await self.threads[i].delete()
-                            self.threads.pop(i)
+                    if len(self.threads) > 0:
+                        for i in self.threads:
+                            if msg.channel == self.threads[i]:
+                                user = await self.fetch_user(i)
+                                await user.send("Thread closed!")
+                                await self.threads[i].delete()
+                                self.threads.pop(i)
 
                 if command == "snipe":
                     if self.the_deleted_msg_content == "":
@@ -188,7 +198,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"You were kicked from **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were kicked from **Tokyo Revengers** for {self.arr_as_str(args)}")
                                 await msg.mentions[0].kick(reason=self.arr_as_str(args))
                                 await msg.channel.send(f"Kicked {msg.mentions[0].name}\nReason: {self.arr_as_str(args)}")
                             except:
@@ -197,7 +207,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
-                                    await usr.send(f"You were kicked from **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                    await usr.send(f"You were kicked from **Tokyo Revengers** for {self.arr_as_str(args)}")
                                     await usr.kick(reason=self.arr_as_str(args))
                                     await msg.channel.send(f"Kicked {usr.name}\nReason: {self.arr_as_str(args)}")
                                 except:
@@ -228,7 +238,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were muted in **Tokyo Revengers** for {self.arr_as_str(args)}")
                                 await msg.mentions[0].add_roles(role)
                                 await msg.channel.send(f"Muted {msg.mentions[0].name}")
                             except:
@@ -237,7 +247,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args.pop(0))
-                                    await usr.send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                    await usr.send(f"You were muted in **Tokyo Revengers** for {self.arr_as_str(args)}")
                                     await usr.add_roles(role)
                                     await msg.channel.send(f"Muted {usr.name}")
                                 except:
@@ -275,7 +285,7 @@ class MyClient(Client):
                         if len(msg.mentions) != 0:
                             try:
                                 args.pop(0)
-                                await msg.mentions[0].send(f"You were banned from **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                await msg.mentions[0].send(f"You were banned from **Tokyo Revengers** for {self.arr_as_str(args)}")
                                 await msg.mentions[0].ban()
                                 await msg.channel.send(f"Banned {msg.mentions[0].name}")
                             except:
@@ -284,7 +294,7 @@ class MyClient(Client):
                             if len(args) != 0:
                                 try:
                                     usr = await msg.guild.fetch_member(args[0])
-                                    await usr.send(f"You were muted in **Tokyo Revengers** cause {self.arr_as_str(args)}")
+                                    await usr.send(f"You were muted in **Tokyo Revengers** for {self.arr_as_str(args)}")
                                     await usr.ban()
                                 except:
                                     await msg.channel.send("Cannot Do that sorry")
@@ -305,6 +315,18 @@ class MyClient(Client):
                     help_embed.add_field(name="Ping Latency", value=f"`{PREFIX}ping`", inline=True)
                     help_embed.set_footer(text=f"Requested by {msg.author}")
                     await msg.channel.send(embed=help_embed)
+        else:
+            if len(self.threads) > 0:
+                for i in self.threads:
+                    if msg.channel == self.threads[i]:
+                        try:
+                            user = await self.fetch_user(i)
+                            await user.send(f"**{msg.author.name}**: {msg.content}")
+                        except:
+                            await msg.channel.send("Nub, must have blocked me")
+                            await msg.channel.send("Closing this")
+                            await self.threads[i].delete()
+                            self.threads.pop(i)
 
 
 load_dotenv()
