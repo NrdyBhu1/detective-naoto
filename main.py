@@ -113,7 +113,7 @@ class MyClient(Client):
     async def get_cat(self, guild):
         cats = guild.by_category()
         for i in range(len(cats)):
-            if cats[i][0].name == "DN-Threads-Or-Log":
+            if cats[i][0].name == "Naoto's Office":
                 self.thread_category = cats[i][0]
 
         if self.thread_category is None:
@@ -121,7 +121,7 @@ class MyClient(Client):
             overwrites = {
                 guild.default_role: PermissionOverwrite(read_messages=False)
             }
-            self.thread_category = await guild.create_category(name="DN-Threads-Or-Log", overwrites=overwrites, position=0)
+            self.thread_category = await guild.create_category(name="Naoto's Office", overwrites=overwrites, position=0)
 
 
     async def on_message(self, msg):
