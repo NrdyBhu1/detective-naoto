@@ -63,7 +63,7 @@ class MyClient(Client):
         self.the_deleted_msg_content = ""
         self.the_deleted_msg_timestamp = None
         self.the_deleted_msg_author_id = 0
-        await self.change_presence(activity=Activity(type=ActivityType.listening, name=f"{PREFIX}help | Dm me help for help"))
+        await self.change_presence(activity=Activity(type=ActivityType.listening, name=f"{PREFIX}help | Dm me for help"))
         print(f"Logged in as {self.user}")
 
 
@@ -130,7 +130,7 @@ class MyClient(Client):
 
         if msg.channel.type == ChannelType.private:
             if msg.author.id in self.threads:
-                await self.threads[msg.author.id].send(f"{msg.content}")
+                await self.threads[msg.author.id].send(f"**{msg.author.name}:** {msg.content}")
             else:
                 guild = await self.fetch_guild(os.getenv("GUILD"))
                 await self.get_cat(guild)
@@ -322,7 +322,7 @@ class MyClient(Client):
                     if msg.channel == self.threads[i]:
                         try:
                             user = await self.fetch_user(i)
-                            await user.send(f"**{msg.author.name}**: {msg.content}")
+                            await user.send(f"{msg.content}")
                         except:
                             await msg.channel.send("Nub, must have blocked me")
                             await msg.channel.send("Closing this")
