@@ -130,7 +130,7 @@ class MyClient(Client):
 
         if msg.channel.type == ChannelType.private:
             if msg.author.id in self.threads:
-                await self.threads[msg.author.id].send(f"**{msg.author.name}**: {msg.content}")
+                await self.threads[msg.author.id].send(f"{msg.content}")
             else:
                 guild = await self.fetch_guild(os.getenv("GUILD"))
                 await self.get_cat(guild)
@@ -142,6 +142,7 @@ class MyClient(Client):
                 await self.wait_until_ready()
                 channel = await self.thread_category.create_text_channel(name=f"{msg.author.name}-{self.get_seed()}", overwrites=overwrites)
                 await channel.send(f"{msg.author.name} requires help")
+                await channel.send(msg.content)
                 self.threads[msg.author.id] = channel
 
         if msg.mentions.count(self.user) > 1:
