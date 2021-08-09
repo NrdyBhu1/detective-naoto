@@ -148,7 +148,7 @@ class MyClient(Client):
         if msg.mentions.count(self.user) > 1:
             await msg.reply(f"My Prefix is {PREFIX}")
 
-        if msg.content.startswith(PREFIX):
+        if msg.content.lower().startswith(PREFIX):
             if msg.channel.type == ChannelType.private:
                 await msg.reply("Pls navigate to a server to use bot commands")
             else:
