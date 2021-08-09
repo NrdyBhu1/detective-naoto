@@ -152,7 +152,7 @@ class MyClient(Client):
             if msg.channel.type == ChannelType.private:
                 await msg.reply("Pls navigate to a server to use bot commands")
             else:
-                msg.content = msg.content.replace(PREFIX, "").split(" ")
+                msg.content = msg.content.lower().replace(PREFIX, "").split(" ")
                 command = msg.content.pop(0)
                 args = msg.content
 
