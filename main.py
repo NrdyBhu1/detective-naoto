@@ -149,7 +149,6 @@ class MyClient(Client):
             await msg.reply(f"My Prefix is {PREFIX}")
 
         if msg.content.lower().startswith(PREFIX):
-            print("Command entered...")
             if msg.channel.type == ChannelType.private:
                 await msg.reply("Pls navigate to a server to use bot commands")
             else:
